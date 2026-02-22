@@ -1,0 +1,128 @@
+---
+title: "High School Student's Performance in Portugal"
+author: "Olamide Adu"
+format: pdf
+theme: darkly
+---
+
+# Introduction
+
+This study is to *investigate* the performance of high school students of two schools in **Portugal**.
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+
+library(tidyverse)
+library(readxl)
+library(knitr)
+library(ggthemes)
+library(broom)
+```
+
+## Problem Statement
+
+![Highschool student](https://images.pexels.com/photos/6209799/pexels-photo-6209799.jpeg)
+
+[eustudyassist](www.eustudyassist.com)
+
+# Data
+```{r}
+math_score <-  read_excel("data/student-performance/student-math.xlsx")
+```
+
+Previewing the data
+```{r}
+math_score |> select(1:6) |> 
+  head() |> 
+  kable()
+```
+
+The number of individuals in the school is presented below
+```{r}
+math_score |> 
+  ggplot(aes(school)) +
+  geom_bar()
+```
+
+```{r}
+math_score <- math_score |> 
+  mutate(
+    total_score = g1 + g2 + g3,
+    percent_score = total_score/60 * 100,
+    internet = ifelse(internet == "no", FALSE, TRUE),
+    across(where(is.character), factor)
+  )
+```
+
+
+```{r}
+#| warning: false
+
+math_score |> 
+  mutate(
+    school = factor(
+      school,
+      levels = c("GP", "MS"),
+      labels = c("Gabriel Pereira", "Mousinho da Silveira")
+    )
+  ) |>  
+  ggplot(aes(school, fill = sex)) +
+  geom_bar(
+    position = "dodge"
+  ) +
+  labs(
+    title = "Number of individual in schools according to gender",
+    y = "Frequency",
+    fill = "Gender"
+  ) +
+  scale_fill_colorblind() +
+  theme_calc(base_size = 8) +
+  theme(
+    axis.title.x = element_blank(), 
+    axis.text.x = element_text(face = "bold")
+  ) 
+```
+
+```{r}
+math_score_model_1 <-  lm(
+  percent_score ~ age, 
+  data = math_score
+)
+
+summary(math_score_model_1)
+```
+```{r}
+#| include: false
+augment(math_score_model_1)
+```
+
+```{r}
+glance(math_score_model_1) |> 
+  select(1:6) |> 
+  set_names(c("rsq", "adj_rsq", "sig",
+              "stats", "p_value", "df")) |> 
+  kable()
+```
+
+```{r}
+tidy(math_score_model_1) |> 
+  kable()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
